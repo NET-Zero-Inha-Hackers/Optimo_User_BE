@@ -26,6 +26,7 @@ public class OAuthTokenService {
 
     private OAuthUserInfo getGoogleUserInfo(String token) {
         try {
+            // https://blog.naver.com/pjt3591oo/222693372349
             return webClient.get()
                     .uri("https://www.googleapis.com/oauth2/v2/userinfo")
                     .headers(headers -> headers.setBearerAuth(token))
@@ -50,6 +51,7 @@ public class OAuthTokenService {
 
     private OAuthUserInfo getKakaoUserInfo(String token) {
         try {
+            // https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#req-user-info
             return webClient.get()
                     .uri("https://kapi.kakao.com/v2/user/me")
                     .headers(headers -> headers.setBearerAuth(token))
