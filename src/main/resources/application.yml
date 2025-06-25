@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: Optmo_User_BE
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/optimo_db
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+
+
+jwt:
+  secret: "your-very-secure-and-long-secret-key-at-least-256-bit"
+  access-token-validity-in-seconds: 1800  # 30 minutes
