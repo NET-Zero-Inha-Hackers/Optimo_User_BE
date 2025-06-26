@@ -9,31 +9,32 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: optimo-user
-  PACKAGE_DIRECTORY: '.'
-  JAVA_VERSION: '17'
+  AZURE_FUNCTIONAPP_NAME: optimo-user # Azure Function 앱 이름
+  PACKAGE_DIRECTORY: '.'               # build.gradle이 있는 디렉토리
+  JAVA_VERSION: '17'                  # Java 버전
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # JWT 요청용
+      contents: read  # checkout 권한
 
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
 
-      - name: Setup Java SDK ${{ env.JAVA_VERSION }}
+      - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'microsoft'
 
-      - name: 'Build Project and Package Azure Functions'
+      - name: 'Build Project Using Gradle'
         shell: pwsh
         run: |
           pushd '${{ env.PACKAGE_DIRECTORY }}'
+          ./gradlew clean build
           ./gradlew clean azureFunctionsPackage
           popd
 
@@ -44,11 +45,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9ADCD142DBE34B8CB2C2F533E244BCA9 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_15F1B4FCE9C8498292F6A71F69D792DE }}
 
-      - name: 'Deploy to Azure Functions'
+      - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: '${{ env.AZURE_FUNCTIONAPP_NAME }}'
           slot-name: 'Production'
-          package: '${{ env.PACKAGE_DIRECTORY }}/build/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}'
-          respect-pom-xml: false
+          package: '${{ env.PACKAGE_DIRECTORY }}/build/libs'  # Gradle 빌드 결과 경로
+          respect-pom-xml: false   # pom.xml이 없으니 false로 변경
