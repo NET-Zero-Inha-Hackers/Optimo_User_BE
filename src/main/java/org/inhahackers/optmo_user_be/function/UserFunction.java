@@ -10,14 +10,16 @@ import org.inhahackers.optmo_user_be.dto.UserResponse;
 import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class UserFunction {
 
-    private final JwtTokenService jwtTokenService;
-    private final UserService userService;
+    private static final ApplicationContext context =
+            new AnnotationConfigApplicationContext("org.inhahackers.optmo_user_be");
 
     @FunctionName("userFunction")
     public HttpResponseMessage run(
@@ -26,12 +28,15 @@ public class UserFunction {
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
             HttpRequestMessage<Void> request,
-            final ExecutionContext context) {
+            final ExecutionContext executionContext) {
 
-        context.getLogger().info("Processing userFunction request");
+        executionContext.getLogger().info("Processing userFunction request");
 
         try {
             // 요청 바디 파싱
+            JwtTokenService jwtTokenService = context.getBean(JwtTokenService.class);
+            UserService userService = context.getBean(UserService.class);
+
             String email = request.getQueryParameters().get("email");
 
             // 유저 정보 조회 및 생성
@@ -73,6 +78,7 @@ public class UserFunction {
                     .build();
 
         } catch (Exception e) {
+            executionContext.getLogger().severe("ERROR: " + e.getMessage());
             return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal error: " + e.getMessage())
                     .build();
