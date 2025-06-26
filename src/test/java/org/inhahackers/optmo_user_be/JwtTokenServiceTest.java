@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {
                 "jwt.secret=testtesttesttesttesttesttesttesttest",
-                "jwt.access-token-validity-in-seconds=3600"
+                "jwt.access-token-validity-in-seconds=6000000000"
         }
 )
 class JwtTokenServiceTest {
@@ -32,6 +32,8 @@ class JwtTokenServiceTest {
     void generateToken_and_extractData_success(Long userId, String email, String role) {
         // when
         String token = jwtTokenService.generateToken(userId, email, role);
+
+        System.out.println(token);
 
         // then
         assertThat(jwtTokenService.extractUserId(token)).isEqualTo(userId);

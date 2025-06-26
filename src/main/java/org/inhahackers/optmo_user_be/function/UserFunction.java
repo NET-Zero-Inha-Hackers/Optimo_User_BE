@@ -22,7 +22,7 @@ public class UserFunction {
     @FunctionName("userFunction")
     public HttpResponseMessage run(
             @HttpTrigger(
-                    name = "req",
+                    name = "request",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS,
                     dataType = "application/json") HttpRequestMessage<Optional<EmailRequest>> request,

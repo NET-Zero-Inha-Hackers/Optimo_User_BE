@@ -27,7 +27,7 @@ public class OAuthUserFunction {
     @FunctionName("oauthUserFunction")
     public HttpResponseMessage run(
             @HttpTrigger(
-                    name = "req",
+                    name = "requser",
                     methods = {HttpMethod.GET, HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
             HttpRequestMessage<Optional<String>> request,

@@ -24,7 +24,7 @@ public class JWTUserFunction {
     @FunctionName("jwtUserFunction")
     public HttpResponseMessage run(
             @HttpTrigger(
-                    name = "req",
+                    name = "requset",
                     methods = {HttpMethod.GET, HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
             HttpRequestMessage<Optional<String>> request,
