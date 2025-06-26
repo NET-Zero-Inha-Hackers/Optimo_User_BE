@@ -20,7 +20,8 @@ public class FunctionRouterConfig {
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions
                 .route(RequestPredicates.POST("/api/oauthUser"), this::handleOAuthUser)
-                .andRoute(RequestPredicates.POST("/api/user"), this::handleJWTUser);
+                .andRoute(RequestPredicates.POST("/api/user"), this::handleJWTUser)
+                .andRoute(RequestPredicates.PATCH("/api/elecAndCost"), this::handleElecAndCost);
     }
 
     private Mono<ServerResponse> handleOAuthUser(ServerRequest request) {
@@ -39,6 +40,16 @@ public class FunctionRouterConfig {
                 (Function<ServerRequest, Mono<ServerResponse>>) functionCatalog.lookup("jwtUserFunction");
         if (func == null) {
             return ServerResponse.status(500).bodyValue("Function jwtUserFunction not found");
+        }
+        return func.apply(request);
+    }
+
+    private Mono<ServerResponse> handleElecAndCost(ServerRequest request) {
+        @SuppressWarnings("unchecked")
+        Function<ServerRequest, Mono<ServerResponse>> func =
+                (Function<ServerRequest, Mono<ServerResponse>>) functionCatalog.lookup("increaseElecAndCostFunction");
+        if (func == null) {
+            return ServerResponse.status(500).bodyValue("Function increaseElecAndCostFunction not found");
         }
         return func.apply(request);
     }

@@ -6,76 +6,119 @@ Optimo 프로젝트의 User 조회 서비스 레포지토리입니다.
 - 아래와 같은 경로로 URL 요청을 할 경우, User 정보를 반환합니다.
 
 ---
-# 📘 Optmo User 조회 API 명세서
-## 🔐 공통사항
-- 모든 요청은 `JSON` 기반
-- 인증 토큰은 `Authorization`: `Bearer <token>` 형식으로 전송
-- 응답 타입: `application/json`
+# 📘 Optmo User 서비스 API 명세서
 
-## 1. 🔑 OAuth 사용자 등록 및 JWT 발급
-### ✅ POST /api/oauthUser
-- 설명: <br>
-   OAuth provider(Google/Kakao)로부터 받은 액세스 토큰을 검증하고,
-   유저를 DB에 등록한 후 자체 JWT 토큰을 응답 헤더에 포함하여 반환합니다.
----
-- 📥 Request
-  - Headers
-    ```
-    Authorization: Bearer {oauth-access-token}
-    ```
-  - Query Parameters
-      ```angular2html
-      provider=google | kakao
-      ```
-- 📤 Response
-  - ✅ 200 OK
-    - Headers
-      ```
-      Authorization: Bearer {jwt-token}
-      ```
-    - Body
+### 1. OAuth 사용자 인증 및 회원가입
+**Endpoint**: `POST /api/oauthUser`  
+**Handler**: `OAuthUserFunction`  
+**기능**: OAuth 제공자(Provider)를 통한 사용자 인증/회원가입 및 JWT 발급
+
+#### 📤 요청
+- **Headers**:
+    - `Authorization`: `Bearer {OAuth_Access_Token}`
+- **Query Parameters**:
+    - `provider`: OAuth 제공자 (e.g., `google`, `kakao`)
+
+#### 📥 응답
+- **성공 시 (200 OK)**:
+    - **Headers**: `Authorization: Bearer {JWT_Token}`
+    - **Body** (JSON):
       ```
       {
-          "id": 1,
-          "email": "user@example.com",
-          "name": "홍길동",
-          "profileImage": "https://...",
-          "provider": "GOOGLE"
+        "id": 123,
+        "email": "user@example.com",
+        "name": "홍길동",
+        "profileImage": "https://...",
+        "provider": "GOOGLE",
+        "totalUseElecEstimate": 150.5,
+        "totalLlmElecEstimate": 30.2,
+        "totalUseCostEstimate": 45000,
+        "totalLlmCostEstimate": 9000
       }
       ```
-
-
-- ❌ 400 Bad Request : 쿼리 파라미터나 헤더가 잘못되었을 때
-- ❌ 401 Unauthorized : OAuth 토큰이 유효하지 않을 때
-
-## 2. 🙍 JWT로 사용자 정보 요청
-### ✅ POST /api/user
-- 설명: <br>
-   FE가 저장한 JWT를 Authorization 헤더에 담아 사용자 정보를 요청합니다.
-
-- 📥 Request
-  - Headers
-    ```
-    Authorization: Bearer {jwt-token}
-    ```
-- 📤 Response
-  - ✅ 200 OK
-    - Body
-      ```
-      {
-          "id": 1,
-          "email": "user@example.com",
-          "name": "홍길동",
-          "profileImage": "https://...",
-          "provider": "GOOGLE"
-      }
-      ```
-
-  - ❌ 400 Bad Request : Authorization 헤더 누락/형식 오류
-  - ❌ 401 Unauthorized : JWT가 만료되었거나 위조된 경우
-  - ❌ 500 Internal Server Error : 내부 서버 오류
+- **에러**:
+    - `400 Bad Request`: Provider 파라미터 누락/유효하지 않음
+    - `401 Unauthorized`: OAuth 토큰 검증 실패
+    - `500 Internal Server Error`: 서버 내부 오류
 
 ---
+
+### 2. JWT 사용자 정보 조회
+**Endpoint**: `POST /api/user`  
+**Handler**: `JWTUserFunction`  
+**기능**: JWT 토큰으로 사용자 정보 조회
+
+#### 📤 요청
+- **Headers**:
+    - `Authorization`: `Bearer {JWT_Token}`
+
+#### 📥 응답
+- **성공 시 (200 OK)**:
+    - **Body** (JSON):
+      ```
+      {
+        "id": 123,
+        "email": "user@example.com",
+        "name": "홍길동",
+        "profileImage": "https://...",
+        "provider": "GOOGLE",
+        "totalUseElecEstimate": 150.5,
+        "totalLlmElecEstimate": 30.2,
+        "totalUseCostEstimate": 45000,
+        "totalLlmCostEstimate": 9000
+      }
+      ```
+- **에러**:
+    - `400 Bad Request`: Authorization 헤더 오류
+    - `401 Unauthorized`: JWT 검증 실패
+    - `404 Not Found`: 사용자 없음 (코드상에선 500으로 처리됨)
+    - `500 Internal Server Error`: 서버 내부 오류
+
+---
+
+### 3. 전력량/비용 예상치 증가
+**Endpoint**: `PATCH /api/elecAndCost`  
+**Handler**: `IncreaseElecAndCostFunction`  
+**기능**: 사용자의 전력량/비용 예상치 증가 (⚠️ 라우터 버그 주의: 현재 `handleJWTUser` 매핑됨)
+
+#### 📤 요청
+- **Headers**:
+    - `Authorization`: `Bearer {JWT_Token}`
+- **Body** (JSON):
+```
+{
+    "useElecEstimate": 5000,
+    "llmElecEstimate": 5000,
+    "useCostEstimate": 5000,
+    "llmCostEstimate": 5000
+}
+```
+
+#### 📥 응답
+- **성공 시 (200 OK)**:
+- **Body**: `"Successfully Increase Elec and Cost Estimate"`
+- **에러**:
+- `400 Bad Request`: Authorization 헤더 오류
+- `401 Unauthorized`: JWT 검증 실패
+- `404 Not Found`: 사용자 없음 (코드상에선 500으로 처리됨)
+- `500 Internal Server Error`: 서버 내부 오류
+
+---
+
+## ⚠️ 주의사항
+1. **보안**:
+- 모든 엔드포인트는 `Authorization` 헤더 필수
+- JWT 토큰은 `jwtTokenService`에서 검증
+
+2. **에러 처리**:
+- 비즈니스 로직 오류는 `500 Internal Server Error`로 통일
+- 구체적인 오류 메시지는 응답 body에 포함
+
+
+
+---
+
+
 # 🛠️ 사용 흐름 요약
 1. FE에서 Google/Kakao 로그인 후 access_token 확보
 2. /api/oauthUser?provider=google에 access_token 전송

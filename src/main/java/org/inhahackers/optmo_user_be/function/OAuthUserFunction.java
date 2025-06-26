@@ -59,6 +59,10 @@ public class OAuthUserFunction implements Function<ServerRequest, Mono<ServerRes
                     .name(user.getName())
                     .profileImage(user.getProfileImage())
                     .provider(user.getProvider())
+                    .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
+                    .totalUseElecEstimate(user.getTotalUseElecEstimate())
+                    .totalLlmCostEstimate(user.getTotalLlmCostEstimate())
+                    .totalUseCostEstimate(user.getTotalUseCostEstimate())
                     .build();
 
             // JWT 토큰 생성 (예: email과 role 기반)

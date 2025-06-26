@@ -38,6 +38,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private Long totalUseElecEstimate;
+
+    private Long totalLlmElecEstimate;
+
+    private Long totalUseCostEstimate;
+
+    private Long totalLlmCostEstimate;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
