@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.microsoft.azure.azurefunctions' version '1.13.0' // ✅ Azure Functions plugin 추가
 }
 
 group = 'org.inhahackers'
@@ -17,7 +18,6 @@ repositories {
     mavenCentral()
 }
 
-
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.4"
@@ -27,29 +27,40 @@ dependencyManagement {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.cloud:spring-cloud-starter-function-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-function-web' // ✅ Spring Cloud Function 웹 스타터
+    implementation 'org.springframework.cloud:spring-cloud-function-adapter-azure:4.0.0' // ✅ Azure 어댑터
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'org.postgresql:postgresql:42.6.0'
 
-    // PostgreSQL JDBC Driver
+    implementation 'org.postgresql:postgresql:42.6.0'
     runtimeOnly 'org.postgresql:postgresql'
 
-    // JWT - optional, only if you're issuing your own tokens
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    // (Optional) WebClient instead of RestTemplate
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+azurefunctions {
+    resourceGroup = 'your-resource-group-name'       // ⚠️ 여기에 실제 리소스 그룹명 입력
+    appName = 'optio-user'                           // ⚠️ Azure Function App 이름
+    region = 'westeurope'                            // ⚠️ 적절한 지역 선택
+    runtime {
+        os = 'linux'
+        javaVersion = '11'
+        functionsWorkerRuntime = 'java'
+    }
+    appSettings {
+        FUNCTIONS_EXTENSION_VERSION = '~4'
+    }
 }
