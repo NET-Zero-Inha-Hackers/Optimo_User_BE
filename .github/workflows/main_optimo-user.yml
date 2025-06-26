@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest  # Windows -> Linux로 변경
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
@@ -25,16 +25,17 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'  # Microsoft -> Temurin으로 변경
+          distribution: 'temurin'
 
       - name: Grant execute permission
-        run: chmod +x gradlew  # Linux에서 권한 설정
+        run: chmod +x gradlew
 
       - name: Build with Gradle
         run: ./gradlew clean build --stacktrace --info
 
-      - name: Package Azure Functions
-        run: ./gradlew azureFunctionsPackage --stacktrace
+      # 🔥 azureFunctionsPackage 대신 jar 작업 의존성 실행
+      - name: Prepare Azure Functions package
+        run: ./gradlew jar azureFunctionsPackage --stacktrace
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -48,3 +49,4 @@ jobs:
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: build/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}

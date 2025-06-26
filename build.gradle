@@ -51,16 +51,16 @@ dependencies {
     implementation 'org.reflections:reflections:0.10.2'
 }
 
-// JAR 설정 (단일 블록으로 통합)
+// JAR 설정
 jar {
     archiveBaseName = "Optimo_User_BE"
     archiveVersion = "0.0.1-SNAPSHOT"
     archiveClassifier = '' // plain JAR 비활성화
 }
 
+// 🔥 ignoreFailures 속성 제거
 tasks.named("azureFunctionsPackage") {
     dependsOn("jar")
-    ignoreFailures = false
 }
 
 tasks.named('test') {
@@ -73,7 +73,7 @@ azurefunctions {
     appName = 'optimo-user'
     region = 'Korea Central'
     runtime {
-        os = 'linux' // Windows -> Linux로 변경
+        os = 'windows'
         javaVersion = '17'
     }
     appSettings {
@@ -82,9 +82,14 @@ azurefunctions {
     }
 }
 
-// 🔥 함수 클래스 스캔 문제 해결을 위한 구성
+// 🔥 함수 클래스 스캔 문제 해결
 configurations.all {
     resolutionStrategy {
         force 'org.reflections:reflections:0.10.2'
     }
+}
+
+// 🔥 Spring Boot Uber JAR 생성 비활성화
+bootJar {
+    enabled = false
 }
