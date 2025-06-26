@@ -27,7 +27,7 @@ public class IncreaseElecFunction {
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS,
                     dataType = "application/json")
-            HttpRequestMessage<Optional<ElecRequest>> request,
+            HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
 
         context.getLogger().info("increaseElecFunction called");
@@ -43,8 +43,10 @@ public class IncreaseElecFunction {
             String accessToken = authHeader.substring("Bearer ".length());
 
             // 2. Request Body 파싱
-            ElecRequest elecRequest = request.getBody()
-                    .orElseThrow(() -> new IllegalArgumentException("Request body is missing"));
+            ElecRequest elecRequest = ElecRequest.builder()
+                    .useElecEstimate(Long.getLong(request.getQueryParameters().get("useElecEstimate")))
+                    .llmElecEstimate(Long.getLong(request.getQueryParameters().get("llmElecEstimate")))
+                    .build();
 
             // 3. 토큰에서 userId 추출 및 처리
             Long userId = jwtTokenService.extractUserId(accessToken);
