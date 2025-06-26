@@ -2,10 +2,6 @@ spring:
   application:
     name: Optimo_User_BE
 
-  cloud:
-    function:
-      definition: "userFunction;oauthUserFunction;jwtUserFunction;increaseElecFunction"
-
   config:
     import: optional:file:.env[.properties]
 

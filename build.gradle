@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.microsoft.azure.azurefunctions' version '1.13.0'
+    id 'com.microsoft.azure.azurewebapp' version '1.11.0'
 }
 
 group = 'org.inhahackers'
@@ -18,78 +18,64 @@ repositories {
     mavenCentral()
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.4"
-    }
-}
-
 dependencies {
+    // 필수 코어 의존성
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.cloud:spring-cloud-starter-function-web'
-    implementation 'org.springframework.cloud:spring-cloud-function-adapter-azure:4.0.4'
-    implementation 'com.microsoft.azure.functions:azure-functions-java-library:2.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
+    // 데이터베이스
     implementation 'org.postgresql:postgresql:42.6.0'
-    runtimeOnly 'org.postgresql:postgresql'
 
+    // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+    // 개발 도구
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    // 🔥 Reflections 버전 고정
-    implementation 'org.reflections:reflections:0.10.2'
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// JAR 설정
-jar {
-    archiveBaseName = "Optimo_User_BE"
-    archiveVersion = "0.0.1-SNAPSHOT"
-    archiveClassifier = '' // plain JAR 비활성화
+// 실행 가능 JAR 설정
+bootJar {
+    archiveFileName = "optimo-user-be.jar"
+    launchScript()
 }
 
-// 🔥 ignoreFailures 속성 제거
-tasks.named("azureFunctionsPackage") {
-    dependsOn("jar")
+// Azure Web App 설정
+azurewebapp {
+    subscription = 'c63e76da-2b8c-4e33-bf80-4f25234df051'
+    resourceGroup = 'student006-rg'
+    appName = 'optimo-user-webapp'
+    region = 'Korea Central'
+    pricingTier = 'P1v2'
+
+    runtime {
+        os = 'Linux'
+        webContainer = 'Java SE'
+        javaVersion = 'Java 17'
+    }
+
+    // 환경 변수 설정 (application.yml과 중복되지 않게 필수 항목만)
+    appSettings {
+        SPRING_PROFILES_ACTIVE = 'azure' // Azure 전용 프로필 활성화
+        POSTGRES_USERNAME = project.hasProperty('dbUser') ? project.property('dbUser') : ''
+        POSTGRES_PASSWORD = project.hasProperty('dbPassword') ? project.property('dbPassword') : ''
+    }
+
+    deployment {
+        type = 'jar'
+        runtimeStack = 'JAVA'
+        pathToJar = file("${buildDir}/libs/optimo-user-be.jar").absolutePath
+    }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-azurefunctions {
-    subscription = 'c63e76da-2b8c-4e33-bf80-4f25234df051'
-    resourceGroup = 'student006-rg'
-    appName = 'optimo-user'
-    region = 'Korea Central'
-    runtime {
-        os = 'windows'
-        javaVersion = '17'
-    }
-    appSettings {
-        FUNCTIONS_EXTENSION_VERSION = '~4'
-        FUNCTIONS_WORKER_RUNTIME = 'java'
-    }
-}
-
-// 🔥 함수 클래스 스캔 문제 해결
-configurations.all {
-    resolutionStrategy {
-        force 'org.reflections:reflections:0.10.2'
-    }
-}
-
-// 🔥 Spring Boot Uber JAR 생성 비활성화
-bootJar {
-    enabled = false
 }

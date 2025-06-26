@@ -8,8 +8,7 @@ public class AuthorizationHeaderUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
-    public static String extractToken(ServerRequest.Headers headers) {
-        String authHeader = headers.firstHeader(HttpHeaders.AUTHORIZATION);
+    public static String extractToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             throw new InvalidAuthorizationHeaderException("Missing or invalid Authorization header");
         }
