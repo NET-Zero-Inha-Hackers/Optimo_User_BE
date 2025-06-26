@@ -1,49 +1,56 @@
 package org.inhahackers.optmo_user_be.function;
 
+import com.microsoft.azure.functions.*;
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
+import com.microsoft.azure.functions.annotation.FunctionName;
+import com.microsoft.azure.functions.annotation.HttpTrigger;
 import lombok.RequiredArgsConstructor;
 import org.inhahackers.optmo_user_be.dto.UserResponse;
 import org.inhahackers.optmo_user_be.entity.User;
-import org.inhahackers.optmo_user_be.exception.InvalidAuthorizationHeaderException;
 import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.exception.UserNotFoundException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
-import org.inhahackers.optmo_user_be.util.AuthorizationHeaderUtil;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.function.Function;
 
-@Component
 @RequiredArgsConstructor
-public class JWTUserFunction implements Function<ServerRequest, Mono<ServerResponse>> {
+public class JWTUserFunction {
 
     private final JwtTokenService jwtTokenService;
     private final UserService userService;
 
-    @Override
-    public Mono<ServerResponse> apply(ServerRequest request) {
-        // 1. Authorization 헤더 추출
-        String accessToken;
-        try {
-            accessToken = AuthorizationHeaderUtil.extractToken(request.headers());
-            // 이후 처리
-        } catch (InvalidAuthorizationHeaderException e) {
-            return ServerResponse.badRequest().bodyValue(e.getMessage());
-        }
+    @FunctionName("jwtUserFunction")
+    public HttpResponseMessage run(
+            @HttpTrigger(
+                    name = "req",
+                    methods = {HttpMethod.GET, HttpMethod.POST},
+                    authLevel = AuthorizationLevel.ANONYMOUS)
+            HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
+
+        context.getLogger().info("jwtUserFunction called");
 
         try {
-            // 2. 검증 및 정보 추출
+            // 1. Authorization 헤더 추출
+            String authHeader = request.getHeaders().get("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Missing or invalid Authorization header")
+                        .build();
+            }
+            String accessToken = authHeader.substring("Bearer ".length());
+
+            // 2. 토큰에서 사용자 정보 추출
             Long userId = jwtTokenService.extractUserId(accessToken);
             String email = jwtTokenService.extractEmail(accessToken);
 
+            // 3. 사용자 조회
             User user = userService.findByEmail(email)
                     .orElseThrow(() -> new UserNotFoundException(email));
 
-            // 3. 응답 DTO 구성 (유저 생성 X)
+            // 4. 응답 DTO 생성
             UserResponse response = UserResponse.builder()
                     .id(userId)
                     .email(email)
@@ -54,16 +61,26 @@ public class JWTUserFunction implements Function<ServerRequest, Mono<ServerRespo
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
                     .build();
 
-            return ServerResponse.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(response);
+            // 5. 응답 반환 (JSON + 200 OK)
+            return request.createResponseBuilder(HttpStatus.OK)
+                    .header("Content-Type", "application/json")
+                    .body(response)
+                    .build();
 
         } catch (JwtAuthenticationException e) {
-            return ServerResponse.status(401)
-                    .bodyValue("Invalid JWT: " + e.getMessage());
+            return request.createResponseBuilder(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid JWT: " + e.getMessage())
+                    .build();
+
+        } catch (UserNotFoundException e) {
+            return request.createResponseBuilder(HttpStatus.NOT_FOUND)
+                    .body("User Not Found: " + e.getMessage())
+                    .build();
+
         } catch (Exception e) {
-            return ServerResponse.status(500)
-                    .bodyValue("Internal error: " + e.getMessage());
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal error: " + e.getMessage())
+                    .build();
         }
     }
 }
