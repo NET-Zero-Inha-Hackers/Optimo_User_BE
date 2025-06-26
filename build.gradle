@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.microsoft.azure.azurewebapp' version '1.11.0'
+    id 'com.microsoft.azure.azurewebapp' version '1.10.0'
 }
 
 group = 'org.inhahackers'
@@ -19,12 +19,12 @@ repositories {
 }
 
 dependencies {
-    // 필수 코어 의존성
+    // Spring Core
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // 데이터베이스
+    // PostgreSQL
     implementation 'org.postgresql:postgresql:42.6.0'
 
     // JWT
@@ -32,9 +32,11 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // 개발 도구
+    // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // 개발 편의성
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // 테스트
@@ -42,13 +44,12 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// 실행 가능 JAR 설정
 bootJar {
     archiveFileName = "optimo-user-be.jar"
     launchScript()
 }
 
-// Azure Web App 설정
+// Azure Web App 설정 (✅ deployment 블록 제거됨)
 azurewebapp {
     subscription = 'c63e76da-2b8c-4e33-bf80-4f25234df051'
     resourceGroup = 'student006-rg'
@@ -62,17 +63,10 @@ azurewebapp {
         javaVersion = 'Java 17'
     }
 
-    // 환경 변수 설정 (application.yml과 중복되지 않게 필수 항목만)
     appSettings {
-        SPRING_PROFILES_ACTIVE = 'azure' // Azure 전용 프로필 활성화
+        SPRING_PROFILES_ACTIVE = 'azure'
         POSTGRES_USERNAME = project.hasProperty('dbUser') ? project.property('dbUser') : ''
         POSTGRES_PASSWORD = project.hasProperty('dbPassword') ? project.property('dbPassword') : ''
-    }
-
-    deployment {
-        type = 'jar'
-        runtimeStack = 'JAVA'
-        pathToJar = file("${buildDir}/libs/optimo-user-be.jar").absolutePath
     }
 }
 
