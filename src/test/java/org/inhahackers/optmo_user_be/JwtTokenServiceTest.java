@@ -10,8 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-class JwtTokenServiceIntegrationTest {
+@SpringBootTest(
+        classes = JwtTokenService.class,
+        webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {
+                "jwt.secret=testtesttesttesttesttesttesttesttest",
+                "jwt.access-token-validity-in-seconds=3600"
+        }
+)
+class JwtTokenServiceTest {
 
     @Autowired
     private JwtTokenService jwtTokenService;
