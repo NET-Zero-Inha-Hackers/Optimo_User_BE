@@ -54,7 +54,7 @@ azurewebapp {
     resourceGroup = 'student006-rg'
     appName = 'optimo-user-webapp'
     region = 'Korea Central'
-    pricingTier = 'P1v2'
+    pricingTier = 'P0V3'
 
     runtime {
         os = 'Linux'
