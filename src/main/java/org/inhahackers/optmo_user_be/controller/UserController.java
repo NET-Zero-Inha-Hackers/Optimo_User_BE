@@ -55,11 +55,11 @@ public class UserController {
                     .provider(user.getProvider())
                     .totalUseElecEstimate(user.getTotalUseElecEstimate())
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
+                    .token(newToken)
                     .build();
 
             // 헤더에 JWT 포함 응답
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + newToken);
             headers.set("Content-Type", "application/json");
 
             return ResponseEntity.ok()
@@ -97,11 +97,11 @@ public class UserController {
                     .provider(user.getProvider())
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
                     .totalUseElecEstimate(user.getTotalUseElecEstimate())
+                    .token(jwtToken)
                     .build();
 
             return ResponseEntity.ok()
                     .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + jwtToken)
                     .body(response);
 
         } catch (JwtAuthenticationException e) {

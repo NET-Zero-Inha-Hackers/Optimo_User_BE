@@ -26,4 +26,4 @@ logging:
 
 jwt:
   secret: "testtesttesttesttesttesttesttesttest"
-  access-token-validity-in-seconds: 1800  # 30 minutes
+  access-token-validity-in-seconds: 600000  # 30 minutes

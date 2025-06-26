@@ -15,4 +15,5 @@ public class UserResponse {
     private AuthProvider provider;
     private Long totalUseElecEstimate;
     private Long totalLlmElecEstimate;
+    private String token;
 }
