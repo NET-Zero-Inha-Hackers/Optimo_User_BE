@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest  # Windows -> Linux로 변경
     permissions:
       id-token: write
       contents: read
@@ -25,28 +25,16 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'microsoft'
+          distribution: 'temurin'  # Microsoft -> Temurin으로 변경
 
-      - name: Grant gradlew execute permission
-        shell: pwsh
-        run: |
-          if (Test-Path "gradlew") {
-              # icacls 대신 PowerShell 명령어 사용
-              $file = Get-Item "gradlew"
-              $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Normal
-          }
+      - name: Grant execute permission
+        run: chmod +x gradlew  # Linux에서 권한 설정
 
       - name: Build with Gradle
-        shell: pwsh
-        run: |
-          .\gradlew clean build --stacktrace --info
-          ls -R build/libs  # 빌드 결과 확인
+        run: ./gradlew clean build --stacktrace --info
 
       - name: Package Azure Functions
-        shell: pwsh
-        run: |
-          ./gradlew azureFunctionsScan --console=plain
-          Get-Content build/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}/**/function.json
+        run: ./gradlew azureFunctionsPackage --stacktrace
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -60,4 +48,3 @@ jobs:
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: build/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
