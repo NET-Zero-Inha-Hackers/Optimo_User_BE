@@ -45,7 +45,8 @@ jobs:
       - name: Package Azure Functions
         shell: pwsh
         run: |
-          .\gradlew azureFunctionsPackage --stacktrace
+          ./gradlew azureFunctionsScan --console=plain
+          Get-Content build/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}/**/function.json
 
       - name: Login to Azure
         uses: azure/login@v2

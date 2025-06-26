@@ -28,7 +28,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-function-web' // ✅ Spring Cloud Function 웹 스타터
-    implementation 'org.springframework.cloud:spring-cloud-function-adapter-azure:4.0.0' // ✅ Azure 어댑터
+// 🔥 Azure 라이브러리 버전 업그레이드
+    implementation 'com.microsoft.azure.functions:azure-functions-java-library:2.0.1'
+    // 🔥 Spring Cloud Function 버전 일치
+    implementation 'org.springframework.cloud:spring-cloud-function-adapter-azure:4.0.4'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -56,6 +59,7 @@ jar {
 
 tasks.named("azureFunctionsPackage") {
     dependsOn("jar")
+    ignoreFailures = false
 }
 
 
@@ -69,11 +73,33 @@ azurefunctions {
     appName = 'optimo-user'
     region = 'Korea Central'
     runtime {
-        os = 'linux'
+        os = 'windows'
         javaVersion = '17'
     }
     appSettings {
         FUNCTIONS_EXTENSION_VERSION = '~4'
         FUNCTIONS_WORKER_RUNTIME = 'java'
+    }
+
+    functions = [
+            'org.inhahackers.optmo_user_be.function.UserFunction',
+            'org.inhahackers.optmo_user_be.function.IncreaseElecFunction',
+            'org.inhahackers.optmo_user_be.function.OAuthUserFunction',
+            'org.inhahackers.optmo_user_be.function.JWTUserFunction'
+    ]
+}
+
+// 2. JAR 생성 방식 단일화
+jar {
+    archiveBaseName.set("Optimo_User_BE")
+    archiveVersion.set("0.0.1-SNAPSHOT")
+    // 🔥 plain JAR 비활성화
+    archiveClassifier = ''
+}
+
+// 3. Reflections 버전 고정 (문제 해결 핵심)
+configurations.all {
+    resolutionStrategy {
+        force 'org.reflections:reflections:0.10.2' // 안정적인 버전
     }
 }
