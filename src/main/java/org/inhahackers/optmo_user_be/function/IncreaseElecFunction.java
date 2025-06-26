@@ -25,8 +25,7 @@ public class IncreaseElecFunction {
             @HttpTrigger(
                     name = "increaseelec",
                     methods = {HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS,
-                    dataType = "application/json")
+                    authLevel = AuthorizationLevel.ANONYMOUS)
             HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
 
