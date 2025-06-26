@@ -34,7 +34,7 @@ jobs:
         shell: pwsh
         run: |
           pushd '${{ env.PACKAGE_DIRECTORY }}'
-          ./gradlew azureFunctionsPackage
+          ./gradlew clean azureFunctionsPackage
           popd
 
       - name: Login to Azure
