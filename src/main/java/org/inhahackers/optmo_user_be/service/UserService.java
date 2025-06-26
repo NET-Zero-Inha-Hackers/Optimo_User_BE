@@ -1,8 +1,9 @@
 package org.inhahackers.optmo_user_be.service;
 
 import lombok.RequiredArgsConstructor;
-import org.inhahackers.optmo_user_be.dto.ElecAndCostRequest;
+import org.inhahackers.optmo_user_be.dto.ElecRequest;
 import org.inhahackers.optmo_user_be.dto.UserOAuthRequest;
+import org.inhahackers.optmo_user_be.entity.AuthProvider;
 import org.inhahackers.optmo_user_be.entity.Role;
 import org.inhahackers.optmo_user_be.entity.User;
 import org.inhahackers.optmo_user_be.exception.UserNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,6 @@ public class UserService {
                             .role(Role.ROLE_USER)
                             .totalUseElecEstimate(0L)
                             .totalLlmElecEstimate(0L)
-                            .totalUseCostEstimate(0L)
-                            .totalUseCostEstimate(0L)
                             .build();
                     return userRepository.save(newUser);
                 });
@@ -45,7 +45,7 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public void increaseElecAndCostEstimate(Long userId, ElecAndCostRequest elecAndCostRequest) {
+    public void increaseElecEstimate(Long userId, ElecRequest elecRequest) {
         User user;
         try {
             user = userRepository.findById(userId).orElse(null);
@@ -53,10 +53,25 @@ public class UserService {
             throw new UserNotFoundException("userId: " + userId);
         }
 
-        user.setTotalUseElecEstimate(user.getTotalUseElecEstimate() + elecAndCostRequest.getUseElecEstimate());
-        user.setTotalLlmElecEstimate(user.getTotalLlmElecEstimate() + elecAndCostRequest.getLlmElecEstimate());
-        user.setTotalUseCostEstimate(user.getTotalUseCostEstimate() + elecAndCostRequest.getUseCostEstimate());
-        user.setTotalLlmCostEstimate(user.getTotalLlmCostEstimate() + elecAndCostRequest.getLlmCostEstimate());
+        user.setTotalUseElecEstimate(user.getTotalUseElecEstimate() + elecRequest.getUseElecEstimate());
+        user.setTotalLlmElecEstimate(user.getTotalLlmElecEstimate() + elecRequest.getLlmElecEstimate());
         userRepository.save(user);
+    }
+
+    public User findOrCreateUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .email(email)
+                            .name(null)
+                            .profileImage(null)
+                            .provider(AuthProvider.EMAIL)
+                            .providerId(UUID.randomUUID().toString())
+                            .role(Role.ROLE_USER)
+                            .totalUseElecEstimate(0L)
+                            .totalLlmElecEstimate(0L)
+                            .build();
+                    return userRepository.save(newUser);
+                });
     }
 }

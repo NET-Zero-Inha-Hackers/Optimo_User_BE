@@ -21,6 +21,7 @@ public class OAuthTokenService {
         return switch (provider) {
             case GOOGLE -> getGoogleUserInfo(accessToken);
             case KAKAO -> getKakaoUserInfo(accessToken);
+            case EMAIL -> null;
         };
     }
 

@@ -78,7 +78,7 @@ Optimo 프로젝트의 User 조회 서비스 레포지토리입니다.
 
 ### 3. 전력량/비용 예상치 증가
 **Endpoint**: `PATCH /api/elecAndCost`  
-**Handler**: `IncreaseElecAndCostFunction`  
+**Handler**: `IncreaseElecFunction`  
 **기능**: 사용자의 전력량/비용 예상치 증가 (⚠️ 라우터 버그 주의: 현재 `handleJWTUser` 매핑됨)
 
 #### 📤 요청
@@ -88,9 +88,7 @@ Optimo 프로젝트의 User 조회 서비스 레포지토리입니다.
 ```
 {
     "useElecEstimate": 5000,
-    "llmElecEstimate": 5000,
-    "useCostEstimate": 5000,
-    "llmCostEstimate": 5000
+    "llmElecEstimate": 5000
 }
 ```
 

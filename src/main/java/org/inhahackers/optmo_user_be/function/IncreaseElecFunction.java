@@ -1,7 +1,7 @@
 package org.inhahackers.optmo_user_be.function;
 
 import lombok.RequiredArgsConstructor;
-import org.inhahackers.optmo_user_be.dto.ElecAndCostRequest;
+import org.inhahackers.optmo_user_be.dto.ElecRequest;
 import org.inhahackers.optmo_user_be.exception.InvalidAuthorizationHeaderException;
 import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.exception.UserNotFoundException;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
-public class IncreaseElecAndCostFunction implements Function<ServerRequest, Mono<ServerResponse>> {
+public class IncreaseElecFunction implements Function<ServerRequest, Mono<ServerResponse>> {
 
     private final JwtTokenService jwtTokenService;
     private final UserService userService;
@@ -34,14 +34,14 @@ public class IncreaseElecAndCostFunction implements Function<ServerRequest, Mono
         }
 
         // 2. Request Body로 데이터 받기
-        Mono<ElecAndCostRequest> elecAndCostRequestMono = request.bodyToMono(ElecAndCostRequest.class);
+        Mono<ElecRequest> elecAndCostRequestMono = request.bodyToMono(ElecRequest.class);
 
-        return elecAndCostRequestMono.flatMap(elecAndCostRequest -> {
+        return elecAndCostRequestMono.flatMap(elecRequest -> {
             try {
                 // 3. 검증 및 정보 추출
                 Long userId = jwtTokenService.extractUserId(accessToken);
 
-                userService.increaseElecAndCostEstimate(userId, elecAndCostRequest);
+                userService.increaseElecEstimate(userId, elecRequest);
 
                 // 4. 응답
                 return ServerResponse.ok()

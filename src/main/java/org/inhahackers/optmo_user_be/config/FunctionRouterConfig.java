@@ -20,8 +20,9 @@ public class FunctionRouterConfig {
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions
                 .route(RequestPredicates.POST("/api/oauthUser"), this::handleOAuthUser)
-                .andRoute(RequestPredicates.POST("/api/user"), this::handleJWTUser)
-                .andRoute(RequestPredicates.PATCH("/api/elecAndCost"), this::handleElecAndCost);
+                .andRoute(RequestPredicates.POST("/api/jwtUser"), this::handleJWTUser)
+                .andRoute(RequestPredicates.POST("/api/user"), this::handleUser)
+                .andRoute(RequestPredicates.PATCH("/api/elec"), this::handleElec);
     }
 
     private Mono<ServerResponse> handleOAuthUser(ServerRequest request) {
@@ -44,12 +45,22 @@ public class FunctionRouterConfig {
         return func.apply(request);
     }
 
-    private Mono<ServerResponse> handleElecAndCost(ServerRequest request) {
+    private Mono<ServerResponse> handleUser(ServerRequest request) {
         @SuppressWarnings("unchecked")
         Function<ServerRequest, Mono<ServerResponse>> func =
-                (Function<ServerRequest, Mono<ServerResponse>>) functionCatalog.lookup("increaseElecAndCostFunction");
+                (Function<ServerRequest, Mono<ServerResponse>>) functionCatalog.lookup("userFunction");
         if (func == null) {
-            return ServerResponse.status(500).bodyValue("Function increaseElecAndCostFunction not found");
+            return ServerResponse.status(500).bodyValue("Function userFunction not found");
+        }
+        return func.apply(request);
+    }
+
+    private Mono<ServerResponse> handleElec(ServerRequest request) {
+        @SuppressWarnings("unchecked")
+        Function<ServerRequest, Mono<ServerResponse>> func =
+                (Function<ServerRequest, Mono<ServerResponse>>) functionCatalog.lookup("increaseElecFunction");
+        if (func == null) {
+            return ServerResponse.status(500).bodyValue("Function increaseElecFunction not found");
         }
         return func.apply(request);
     }

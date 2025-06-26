@@ -52,8 +52,6 @@ public class JWTUserFunction implements Function<ServerRequest, Mono<ServerRespo
                     .provider(user.getProvider())
                     .totalUseElecEstimate(user.getTotalUseElecEstimate())
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
-                    .totalUseCostEstimate(user.getTotalUseCostEstimate())
-                    .totalLlmCostEstimate(user.getTotalLlmCostEstimate())
                     .build();
 
             return ServerResponse.ok()

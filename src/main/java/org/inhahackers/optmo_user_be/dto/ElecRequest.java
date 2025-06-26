@@ -5,9 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ElecAndCostRequest {
+public class ElecRequest {
     private Long useElecEstimate;
     private Long llmElecEstimate;
-    private Long useCostEstimate;
-    private Long llmCostEstimate;
 }

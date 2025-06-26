@@ -13,9 +13,6 @@ public class UserResponse {
     private String name;
     private String profileImage;
     private AuthProvider provider;
-
     private Long totalUseElecEstimate;
     private Long totalLlmElecEstimate;
-    private Long totalUseCostEstimate;
-    private Long totalLlmCostEstimate;
 }

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum AuthProvider {
     GOOGLE("GOOGLE"),
-    KAKAO("KAKAO");
+    KAKAO("KAKAO"),
+    EMAIL("EMAIL");
 
     private String value;
 
