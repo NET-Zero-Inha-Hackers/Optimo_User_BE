@@ -26,7 +26,7 @@ public class IncreaseElecFunction {
                     name = "increaseelec",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Optional<String>> request,
+            HttpRequestMessage<Void> request,
             final ExecutionContext context) {
 
         context.getLogger().info("increaseElecFunction called");

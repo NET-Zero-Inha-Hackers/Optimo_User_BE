@@ -25,7 +25,7 @@ public class UserFunction {
                     name = "user",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Optional<String>> request,
+            HttpRequestMessage<Void> request,
             final ExecutionContext context) {
 
         context.getLogger().info("Processing userFunction request");

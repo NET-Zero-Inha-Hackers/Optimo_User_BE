@@ -27,7 +27,7 @@ public class JWTUserFunction {
                     name = "jwtuser",
                     methods = {HttpMethod.GET, HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Optional<String>> request,
+            HttpRequestMessage<Void> request,
             final ExecutionContext context) {
 
         context.getLogger().info("jwtUserFunction called");
