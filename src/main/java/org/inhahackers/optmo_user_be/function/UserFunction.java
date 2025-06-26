@@ -18,8 +18,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserFunction {
 
-    private static final ApplicationContext context =
-            new AnnotationConfigApplicationContext("org.inhahackers.optmo_user_be");
+    private static final ThreadLocal<ApplicationContext> contextHolder =
+            ThreadLocal.withInitial(() ->
+                    new AnnotationConfigApplicationContext("org.inhahackers.optmo_user_be")
+            );
 
     @FunctionName("userFunction")
     public HttpResponseMessage run(
@@ -34,6 +36,7 @@ public class UserFunction {
 
         try {
             // 요청 바디 파싱
+            ApplicationContext context = contextHolder.get();
             JwtTokenService jwtTokenService = context.getBean(JwtTokenService.class);
             UserService userService = context.getBean(UserService.class);
 
