@@ -35,7 +35,6 @@ jobs:
         run: |
           pushd '${{ env.PACKAGE_DIRECTORY }}'
           ./gradlew clean build
-          ./gradlew azureFunctionsPackage
           popd
 
       - name: Login to Azure

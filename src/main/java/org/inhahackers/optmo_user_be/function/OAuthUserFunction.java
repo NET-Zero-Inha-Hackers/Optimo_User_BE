@@ -4,7 +4,6 @@ import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.inhahackers.optmo_user_be.dto.OAuthUserInfo;
 import org.inhahackers.optmo_user_be.dto.UserResponse;
@@ -21,9 +20,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuthUserFunction {
 
-    private UserService userService;
-    private OAuthTokenService tokenService;
-    private JwtTokenService jwtTokenService;
+    private final UserService userService;
+    private final OAuthTokenService tokenService;
+    private final JwtTokenService jwtTokenService;
 
     @FunctionName("oauthUserFunction")
     public HttpResponseMessage run(

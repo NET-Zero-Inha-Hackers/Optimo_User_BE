@@ -17,8 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class IncreaseElecFunction {
 
-    private JwtTokenService jwtTokenService;
-    private UserService userService;
+    private final JwtTokenService jwtTokenService;
+    private final UserService userService;
 
     @FunctionName("increaseElecFunction")
     public HttpResponseMessage run(

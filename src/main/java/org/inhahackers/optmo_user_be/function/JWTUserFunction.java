@@ -18,8 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JWTUserFunction {
 
-    private JwtTokenService jwtTokenService;
-    private UserService userService;
+    private final JwtTokenService jwtTokenService;
+    private final UserService userService;
 
     @FunctionName("jwtUserFunction")
     public HttpResponseMessage run(
