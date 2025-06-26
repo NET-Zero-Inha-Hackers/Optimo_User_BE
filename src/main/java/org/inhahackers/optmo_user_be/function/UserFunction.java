@@ -1,56 +1,44 @@
 package org.inhahackers.optmo_user_be.function;
 
 import com.microsoft.azure.functions.*;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
-import lombok.RequiredArgsConstructor;
-import org.inhahackers.optmo_user_be.dto.EmailRequest;
 import org.inhahackers.optmo_user_be.dto.UserResponse;
 import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Function;
 
-@Component
-@RequiredArgsConstructor
-public class UserFunction {
+@Component("userFunction")
+public class UserFunction implements Function<HttpRequestMessage<Optional<String>>, HttpResponseMessage> {
 
     private final JwtTokenService jwtTokenService;
     private final UserService userService;
 
-    @FunctionName("userFunction")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                    name = "user",
-                    methods = {HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Void> request,
-            final ExecutionContext executionContext) {
+    public UserFunction(JwtTokenService jwtTokenService, UserService userService) {
+        this.jwtTokenService = jwtTokenService;
+        this.userService = userService;
+    }
 
-        executionContext.getLogger().info("Processing userFunction request");
-
+    @Override
+    public HttpResponseMessage apply(HttpRequestMessage<Optional<String>> request) {
         try {
-            // 요청 바디 파싱
+            // 쿼리 파라미터에서 email 추출
             String email = request.getQueryParameters().get("email");
-            if (email == null || email.isEmpty()) {
+
+            if (email == null || email.isBlank()) {
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                         .body("Email parameter is required")
                         .build();
             }
 
-            // 유저 정보 조회 및 생성
+            // 유저 조회 또는 생성
             var user = userService.findOrCreateUserByEmail(email);
 
-            // JWT 토큰 생성 (필요하다면 갱신용)
+            // JWT 발급
             String newToken = jwtTokenService.generateToken(
-                    user.getId(),
-                    user.getEmail(),
-                    user.getRole().name()
+                    user.getId(), user.getEmail(), user.getRole().name()
             );
 
             // 응답 DTO 생성
@@ -64,7 +52,7 @@ public class UserFunction {
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
                     .build();
 
-            // 응답 헤더에 Authorization 토큰 포함
+            // 응답 반환
             return request.createResponseBuilder(HttpStatus.OK)
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + newToken)
@@ -76,13 +64,7 @@ public class UserFunction {
                     .body("Invalid JWT: " + e.getMessage())
                     .build();
 
-        } catch (IllegalArgumentException e) {
-            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage())
-                    .build();
-
         } catch (Exception e) {
-            executionContext.getLogger().severe("ERROR: " + e.getMessage());
             return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal error: " + e.getMessage())
                     .build();
