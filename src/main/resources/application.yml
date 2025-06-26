@@ -1,6 +1,6 @@
 spring:
   application:
-    name: Optmo_User_BE
+    name: Optimo_User_BE
 
   config:
     import: optional:file:.env[.properties]

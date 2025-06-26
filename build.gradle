@@ -47,6 +47,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
+jar {
+    archiveBaseName.set("Optimo_User_BE")
+    archiveVersion.set("0.0.1-SNAPSHOT")
+}
+
+tasks.named("azureFunctionsPackage") {
+    dependsOn("jar")
+}
+
+
 tasks.named('test') {
     useJUnitPlatform()
 }
