@@ -1,3 +1,5 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
 name: Build and deploy Java project to Azure Function App - optimo-user
 
 on:
@@ -28,7 +30,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'microsoft'
 
-      - name: 'Build Azure Functions Package with Gradle'
+      - name: 'Build Project and Package Azure Functions'
         shell: pwsh
         run: |
           pushd '${{ env.PACKAGE_DIRECTORY }}'
@@ -42,8 +44,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9ADCD142DBE34B8CB2C2F533E244BCA9 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_15F1B4FCE9C8498292F6A71F69D792DE }}
 
-      - name: 'Deploy Azure Function App'
+      - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
+        id: fa
         with:
           app-name: '${{ env.AZURE_FUNCTIONAPP_NAME }}'
           slot-name: 'Production'

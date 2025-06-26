@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.microsoft.azure.azurefunctions' version '1.13.0' // ✅ Azure Functions plugin 추가
+    id 'com.microsoft.azure.azurefunctions' version '1.13.0'
 }
 
 group = 'org.inhahackers'
@@ -64,6 +64,7 @@ tasks.named('test') {
 }
 
 azurefunctions {
+    subscription = 'c63e76da-2b8c-4e33-bf80-4f25234df051'
     resourceGroup = 'student006-rg'
     appName = 'optimo-user'
     region = 'Korea Central'
