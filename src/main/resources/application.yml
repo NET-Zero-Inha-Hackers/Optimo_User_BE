@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://optimo-postgres.postgres.database.azure.com:5432/optimo_db
+    url: jdbc:postgresql://optimo-postgres.postgres.database.azure.com:5432/postgres
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
