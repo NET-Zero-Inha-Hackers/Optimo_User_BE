@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -25,5 +25,5 @@ logging:
     org.hibernate.type: trace
 
 jwt:
-  secret: "your-very-secure-and-long-secret-key-at-least-256-bit"
+  secret: "testtesttesttesttesttesttesttesttest"
   access-token-validity-in-seconds: 1800  # 30 minutes
