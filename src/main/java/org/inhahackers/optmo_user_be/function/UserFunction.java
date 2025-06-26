@@ -12,16 +12,16 @@ import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 @RequiredArgsConstructor
 public class UserFunction {
 
-    private static final ThreadLocal<ApplicationContext> contextHolder =
-            ThreadLocal.withInitial(() ->
-                    new AnnotationConfigApplicationContext("org.inhahackers.optmo_user_be")
-            );
+    private final JwtTokenService jwtTokenService;
+    private final UserService userService;
 
     @FunctionName("userFunction")
     public HttpResponseMessage run(
@@ -36,11 +36,12 @@ public class UserFunction {
 
         try {
             // 요청 바디 파싱
-            ApplicationContext context = contextHolder.get();
-            JwtTokenService jwtTokenService = context.getBean(JwtTokenService.class);
-            UserService userService = context.getBean(UserService.class);
-
             String email = request.getQueryParameters().get("email");
+            if (email == null || email.isEmpty()) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Email parameter is required")
+                        .build();
+            }
 
             // 유저 정보 조회 및 생성
             var user = userService.findOrCreateUserByEmail(email);
