@@ -24,38 +24,27 @@ public class UserFunction {
             @HttpTrigger(
                     name = "user",
                     methods = {HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS,
-                    dataType = "application/json")
-            HttpRequestMessage<Optional<EmailRequest>> request,
+                    authLevel = AuthorizationLevel.ANONYMOUS)
+            HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
 
         context.getLogger().info("Processing userFunction request");
 
         try {
-            // 1. Authorization 헤더 추출
-            String authHeader = request.getHeaders().get("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return request.createResponseBuilder(HttpStatus.UNAUTHORIZED)
-                        .body("Missing or invalid Authorization header")
-                        .build();
-            }
-            String token = authHeader.substring("Bearer ".length());
+            // 요청 바디 파싱
+            String email = request.getQueryParameters().get("email");
 
-            // 2. 요청 바디 파싱
-            EmailRequest emailRequest = request.getBody()
-                    .orElseThrow(() -> new IllegalArgumentException("EmailRequest body is missing"));
+            // 유저 정보 조회 및 생성
+            var user = userService.findOrCreateUserByEmail(email);
 
-            // 3. 유저 정보 조회 및 생성
-            var user = userService.findOrCreateUserByEmail(emailRequest.getEmail());
-
-            // 4. JWT 토큰 생성 (필요하다면 갱신용)
+            // JWT 토큰 생성 (필요하다면 갱신용)
             String newToken = jwtTokenService.generateToken(
                     user.getId(),
                     user.getEmail(),
                     user.getRole().name()
             );
 
-            // 5. 응답 DTO 생성
+            // 응답 DTO 생성
             UserResponse response = UserResponse.builder()
                     .id(user.getId())
                     .email(user.getEmail())
@@ -66,7 +55,7 @@ public class UserFunction {
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
                     .build();
 
-            // 6. 응답 헤더에 Authorization 토큰 포함
+            // 응답 헤더에 Authorization 토큰 포함
             return request.createResponseBuilder(HttpStatus.OK)
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + newToken)
