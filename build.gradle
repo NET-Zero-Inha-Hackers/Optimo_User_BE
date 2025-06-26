@@ -80,7 +80,6 @@ azurefunctions {
         FUNCTIONS_EXTENSION_VERSION = '~4'
         FUNCTIONS_WORKER_RUNTIME = 'java'
     }
-    functionNameCase = 'lowercase'
 }
 
 // 🔥 함수 클래스 스캔 문제 해결
