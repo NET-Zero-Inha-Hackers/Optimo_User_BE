@@ -1,10 +1,6 @@
 package org.inhahackers.optmo_user_be.function;
 
 import com.microsoft.azure.functions.*;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.inhahackers.optmo_user_be.dto.UserResponse;
 import org.inhahackers.optmo_user_be.entity.User;
@@ -12,28 +8,22 @@ import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.exception.UserNotFoundException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Function;
 
+@Component("jwtUserFunction")
 @RequiredArgsConstructor
-public class JWTUserFunction {
+public class JWTUserFunction implements Function<HttpRequestMessage<Optional<String>>, HttpResponseMessage> {
 
     private final JwtTokenService jwtTokenService;
     private final UserService userService;
 
-    @FunctionName("jwtUserFunction")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                    name = "jwtuser",
-                    methods = {HttpMethod.GET, HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Void> request,
-            final ExecutionContext context) {
-
-        context.getLogger().info("jwtUserFunction called");
+    @Override
+    public HttpResponseMessage apply(HttpRequestMessage<Optional<String>> request) {
 
         try {
-            // 1. Authorization 헤더 추출
             String authHeader = request.getHeaders().get("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
@@ -42,15 +32,12 @@ public class JWTUserFunction {
             }
             String accessToken = authHeader.substring("Bearer ".length());
 
-            // 2. 토큰에서 사용자 정보 추출
             Long userId = jwtTokenService.extractUserId(accessToken);
             String email = jwtTokenService.extractEmail(accessToken);
 
-            // 3. 사용자 조회
             User user = userService.findByEmail(email)
                     .orElseThrow(() -> new UserNotFoundException(email));
 
-            // 4. 응답 DTO 생성
             UserResponse response = UserResponse.builder()
                     .id(userId)
                     .email(email)
@@ -61,7 +48,6 @@ public class JWTUserFunction {
                     .totalLlmElecEstimate(user.getTotalLlmElecEstimate())
                     .build();
 
-            // 5. 응답 반환 (JSON + 200 OK)
             return request.createResponseBuilder(HttpStatus.OK)
                     .header("Content-Type", "application/json")
                     .body(response)

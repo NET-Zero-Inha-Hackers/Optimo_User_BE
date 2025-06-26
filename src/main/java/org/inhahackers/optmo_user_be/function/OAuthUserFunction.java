@@ -1,9 +1,6 @@
 package org.inhahackers.optmo_user_be.function;
 
 import com.microsoft.azure.functions.*;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
 import lombok.RequiredArgsConstructor;
 import org.inhahackers.optmo_user_be.dto.OAuthUserInfo;
 import org.inhahackers.optmo_user_be.dto.UserResponse;
@@ -14,29 +11,22 @@ import org.inhahackers.optmo_user_be.exception.OAuthTokenValidationException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.OAuthTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Function;
 
+@Component("oauthUserFunction")
 @RequiredArgsConstructor
-public class OAuthUserFunction {
+public class OAuthUserFunction implements Function<HttpRequestMessage<Optional<String>>, HttpResponseMessage> {
 
     private final UserService userService;
     private final OAuthTokenService tokenService;
     private final JwtTokenService jwtTokenService;
 
-    @FunctionName("oauthUserFunction")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                    name = "oauthuser",
-                    methods = {HttpMethod.GET, HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Void> request,
-            final ExecutionContext context) {
-
-        context.getLogger().info("oauthUserFunction called");
-
+    @Override
+    public HttpResponseMessage apply(HttpRequestMessage<Optional<String>> request) {
         try {
-            // 1. Authorization 헤더 추출 및 검증
             String authHeader = request.getHeaders().get("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
@@ -45,7 +35,6 @@ public class OAuthUserFunction {
             }
             String accessToken = authHeader.substring("Bearer ".length());
 
-            // 2. provider 쿼리 파라미터 추출 및 검증
             String providerStr = request.getQueryParameters().get("provider");
             if (providerStr == null || providerStr.isBlank()) {
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
@@ -62,15 +51,12 @@ public class OAuthUserFunction {
                         .build();
             }
 
-            // 3. 토큰 검증 및 사용자 정보 조회
             OAuthUserInfo userInfo = tokenService.verifyAndGetUserInfo(accessToken, provider);
             User user = userService.findOrCreateUser(userInfo.toUserOAuthRequest());
 
-            // 4. JWT 토큰 생성
             String jwtToken = jwtTokenService.generateToken(
                     user.getId(), user.getEmail(), user.getRole().name());
 
-            // 5. 응답 DTO 생성
             UserResponse response = UserResponse.builder()
                     .id(user.getId())
                     .email(user.getEmail())
@@ -81,7 +67,6 @@ public class OAuthUserFunction {
                     .totalUseElecEstimate(user.getTotalUseElecEstimate())
                     .build();
 
-            // 6. 응답 반환 (헤더에 Authorization 포함)
             return request.createResponseBuilder(HttpStatus.OK)
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + jwtToken)

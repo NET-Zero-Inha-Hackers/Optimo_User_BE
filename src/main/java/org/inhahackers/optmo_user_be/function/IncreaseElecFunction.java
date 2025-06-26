@@ -1,36 +1,26 @@
 package org.inhahackers.optmo_user_be.function;
 
 import com.microsoft.azure.functions.*;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.inhahackers.optmo_user_be.dto.ElecRequest;
 import org.inhahackers.optmo_user_be.exception.JwtAuthenticationException;
 import org.inhahackers.optmo_user_be.exception.UserNotFoundException;
 import org.inhahackers.optmo_user_be.service.JwtTokenService;
 import org.inhahackers.optmo_user_be.service.UserService;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Function;
 
+@Component("increaseElecFunction")
 @RequiredArgsConstructor
-public class IncreaseElecFunction {
+public class IncreaseElecFunction implements Function<HttpRequestMessage<Optional<String>>, HttpResponseMessage> {
 
     private final JwtTokenService jwtTokenService;
     private final UserService userService;
 
-    @FunctionName("increaseElecFunction")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                    name = "increaseelec",
-                    methods = {HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS)
-            HttpRequestMessage<Void> request,
-            final ExecutionContext context) {
-
-        context.getLogger().info("increaseElecFunction called");
-
+    @Override
+    public HttpResponseMessage apply(HttpRequestMessage<Optional<String>> request) {
         try {
             // 1. Authorization 헤더 추출
             String authHeader = request.getHeaders().get("Authorization");
@@ -41,10 +31,30 @@ public class IncreaseElecFunction {
             }
             String accessToken = authHeader.substring("Bearer ".length());
 
-            // 2. Request Body 파싱
+            // 2. 쿼리 파라미터에서 long 값 안전하게 파싱
+            String useElecStr = request.getQueryParameters().get("useElecEstimate");
+            String llmElecStr = request.getQueryParameters().get("llmElecEstimate");
+
+            if (useElecStr == null || llmElecStr == null) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Missing required query parameters: useElecEstimate and llmElecEstimate")
+                        .build();
+            }
+
+            long useElecEstimate;
+            long llmElecEstimate;
+            try {
+                useElecEstimate = Long.parseLong(useElecStr);
+                llmElecEstimate = Long.parseLong(llmElecStr);
+            } catch (NumberFormatException e) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                        .body("Invalid number format in query parameters")
+                        .build();
+            }
+
             ElecRequest elecRequest = ElecRequest.builder()
-                    .useElecEstimate(Long.getLong(request.getQueryParameters().get("useElecEstimate")))
-                    .llmElecEstimate(Long.getLong(request.getQueryParameters().get("llmElecEstimate")))
+                    .useElecEstimate(useElecEstimate)
+                    .llmElecEstimate(llmElecEstimate)
                     .build();
 
             // 3. 토큰에서 userId 추출 및 처리
@@ -55,7 +65,7 @@ public class IncreaseElecFunction {
             // 4. 성공 응답
             return request.createResponseBuilder(HttpStatus.OK)
                     .header("Content-Type", "text/plain")
-                    .body("Successfully Increase Elec and Cost Estimate")
+                    .body("Successfully Increased Elec and Cost Estimate")
                     .build();
 
         } catch (JwtAuthenticationException e) {
@@ -66,11 +76,6 @@ public class IncreaseElecFunction {
         } catch (UserNotFoundException e) {
             return request.createResponseBuilder(HttpStatus.NOT_FOUND)
                     .body("User Not Found: " + e.getMessage())
-                    .build();
-
-        } catch (IllegalArgumentException e) {
-            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage())
                     .build();
 
         } catch (Exception e) {
