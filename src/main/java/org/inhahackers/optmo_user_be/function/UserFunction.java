@@ -22,10 +22,11 @@ public class UserFunction {
     @FunctionName("userFunction")
     public HttpResponseMessage run(
             @HttpTrigger(
-                    name = "request",
+                    name = "user",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS,
-                    dataType = "application/json") HttpRequestMessage<Optional<EmailRequest>> request,
+                    dataType = "application/json")
+            HttpRequestMessage<Optional<EmailRequest>> request,
             final ExecutionContext context) {
 
         context.getLogger().info("Processing userFunction request");

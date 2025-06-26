@@ -23,7 +23,7 @@ public class IncreaseElecFunction {
     @FunctionName("increaseElecFunction")
     public HttpResponseMessage run(
             @HttpTrigger(
-                    name = "request",
+                    name = "increaseelec",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS,
                     dataType = "application/json")
