@@ -57,8 +57,7 @@ azurefunctions {
     region = 'westeurope'                            // ⚠️ 적절한 지역 선택
     runtime {
         os = 'linux'
-        javaVersion = '11'
-        functionsWorkerRuntime = 'java'
+        javaVersion = '17'
     }
     appSettings {
         FUNCTIONS_EXTENSION_VERSION = '~4'
