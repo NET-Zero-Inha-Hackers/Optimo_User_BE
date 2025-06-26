@@ -62,9 +62,9 @@ tasks.named('test') {
 }
 
 azurefunctions {
-    resourceGroup = 'your-resource-group-name'       // ⚠️ 여기에 실제 리소스 그룹명 입력
-    appName = 'optio-user'                           // ⚠️ Azure Function App 이름
-    region = 'westeurope'                            // ⚠️ 적절한 지역 선택
+    resourceGroup = 'student006-rg'       // ⚠️ 여기에 실제 리소스 그룹명 입력
+    appName = 'optimo-user'                           // ⚠️ Azure Function App 이름
+    region = 'Korea Central'                            // ⚠️ 적절한 지역 선택
     runtime {
         os = 'linux'
         javaVersion = '17'
